@@ -27,18 +27,32 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="configFile"> Seleccione el archivo de config.: </label>
-            <input type="file" name="archio_config" id="configFile" accept =".xml" required>
-            <button type="submit">Cargar y Procesar</button>
+            <input type="file" name="archivo_config" id="configFile" accept =".xml" required>
+            
+            <input type="hidden" name="form_type" value="configuracion">
+
+            <button type="submit">Cargar configuracion</button>
         </form>
+
+    <!-- Formulario de Consumos ---->
+        <h2>2. Registrar Consumos (.xml)</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="consumoFile">Selecciona el archivo de consumos:</label>
+            <input type="file" name="archivo_consumo" id="consumoFile" accept=".xml" required>
+            <input type="hidden" name="form_type" value="consumo">
+            <button type="submit">Registrar Consumos</button>
+        </form>
+        <!---Seccion de mensajes XD. -->
         {% if mensaje %}
-        <div class="message-box{{tipo_mensaje}}">
-            <h3>Resultado del Envio:</h3>
-            <p>{{mensaje}}</p>
-            {% if resumen%}
-                <h4>Resumen de Carga: </h4>
-                <pre>{{resumen}}</pre>
-            {% endif %}
-        </div>
+            <div class="message-box {{ tipo_mensaje }}">
+                <h3>Resultado de la Operación:</h3>
+                <p>{{ mensaje }}</p>
+                {% if resumen %}
+                    <h4>Resumen:</h4>
+                    <pre>{{ resumen }}</pre>
+                {% endif %}
+            </div>
         {% endif %}
     </div>
 </body>
