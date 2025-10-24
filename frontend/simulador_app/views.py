@@ -4,6 +4,7 @@ import json
 
 API_URL_CONFIG = 'http://127.0.0.1:5000/api/cargarConfiguracion'
 API_URL_CONSUMO = 'http://127.0.0.1:5000/api/registrarConsumo'
+API_URL_CONSULTA = 'http://127.0.0.1:5000/api/consultarDatos'
 
 def pagina_inicio(request):
     context = {}
@@ -55,3 +56,43 @@ def pagina_inicio(request):
                 context['mensaje'] = f"No se pudo conectar con el backend. ¿Está funcionando? Error: {e}"
 
     return render(request, 'simulador_app/inicio.html', context)
+
+def pagina_consulta(request):
+    """
+    Vista para obtener y mostrar todos los datos del backend.
+    """
+    context = {}
+    try:
+        response = requests.get(API_URL_CONSULTA)
+
+        if response.status_code == 200:
+            datos_json = response.json()
+            
+            # --- LÓGICA CLAVE PARA CORREGIR LOS DATOS ---
+            # Navegamos hasta la sección de clientes
+            config = datos_json.get('archivoConfiguraciones', {})
+            lista_clientes = config.get('listaClientes', {})
+            
+            # Verificamos si existe la clave 'cliente'
+            if 'cliente' in lista_clientes:
+                clientes_data = lista_clientes['cliente']
+                
+                # Si 'cliente' NO es una lista (es un solo diccionario), lo convertimos en una lista
+                if not isinstance(clientes_data, list):
+                    lista_clientes['cliente'] = [clientes_data]
+
+                # Hacemos lo mismo para las instancias dentro de cada cliente
+                for cliente in lista_clientes['cliente']:
+                    if 'listaInstancias' in cliente and 'instancia' in cliente['listaInstancias']:
+                        instancias_data = cliente['listaInstancias']['instancia']
+                        if not isinstance(instancias_data, list):
+                            cliente['listaInstancias']['instancia'] = [instancias_data]
+            
+            context['datos'] = datos_json
+        else:
+            context['error'] = f"Error del backend (Código: {response.status_code}): {response.json().get('error')}"
+
+    except requests.exceptions.RequestException as e:
+        context['error'] = f"No se pudo conectar con el backend. ¿Está funcionando? Error: {e}"
+        
+    return render(request, 'simulador_app/consulta_datos.html', context)

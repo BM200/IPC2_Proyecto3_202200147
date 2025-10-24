@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 # --- Importaciones de Módulos Locales ---
 # Importamos las funciones de nuestro módulo de servicios que contienen la
 # lógica de negocio para manipular los archivos XML.
-from services.xml_manager import (procesar_y_guardar_config_xml, procesar_consumos_xml, agregar_recurso )
+from services.xml_manager import (procesar_y_guardar_config_xml, procesar_consumos_xml, agregar_recurso, obtener_datos_completos )
 
 
 # --- Inicialización de la Aplicación Flask ---
@@ -39,7 +39,6 @@ def index():
 # -----------------------------------------------------------------------------
 # Definición de Rutas (Endpoints) de la API
 # Todas las rutas de la API comienzan con el prefijo /api para mantenerlas
-# organizadas y separadas de otras posibles rutas de la aplicación.
 # -----------------------------------------------------------------------------
 
 @app.route('/api/cargarConfiguracion', methods=['POST'])
@@ -130,7 +129,48 @@ def crear_recurso():
         # Capturar cualquier error durante la escritura del archivo.
         print(f"Error al escribir en XML: {e}")
         return jsonify({"error": "Ocurrió un error al procesar la solicitud"}), 500
+    
+   
+#ENDPOINT PARA CONSULTAR DATOS
 
+@app.route('/api/consultarDatos', methods=['GET'])
+def consultar_datos():
+    """
+    Endpoint para leer y devolver todo el contenido del archivo data.xml
+    en formato JSON.
+    """
+    try:
+        # Llama a la función del servicio que lee y convierte el XML a diccionario
+        datos_completos = obtener_datos_completos()
+        return jsonify(datos_completos)
+    except FileNotFoundError:
+        return jsonify({"error": "No se han cargado datos. El archivo data.xml no existe."}), 404
+    except Exception as e:
+        print(f"Error inesperado al consultar datos: {e}")
+        return jsonify({"error": "Ocurrió un error interno al leer los datos."}), 500
+
+
+
+# Al final de app.py, antes del if __name__ == '__main__':
+
+@app.route('/api/generarFactura', methods=['POST'])
+def endpoint_generar_factura():
+    data = request.get_json()
+    fecha_inicio = data.get('fecha_inicio') # Formato esperado: YYYY-MM-DD
+    fecha_fin = data.get('fecha_fin')     # Formato esperado: YYYY-MM-DD
+
+    if not fecha_inicio or not fecha_fin:
+        return jsonify({"error": "Debe proporcionar fecha_inicio y fecha_fin"}), 400
+    
+    try:
+        facturas = generar_facturacion(fecha_inicio, fecha_fin)
+        return jsonify({
+            "mensaje": f"Se generaron {len(facturas)} facturas para el período del {fecha_inicio} al {fecha_fin}.",
+            "facturas": facturas
+        })
+    except Exception as e:
+        print(f"Error al generar facturación: {e}")
+        return jsonify({"error": "Ocurrió un error interno al generar la facturación."}), 500
 
 # --- Punto de Entrada para Ejecutar el Servidor ---
 # Este bloque de código solo se ejecuta cuando el script es llamado directamente
