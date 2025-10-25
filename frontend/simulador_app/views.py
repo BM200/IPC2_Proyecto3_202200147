@@ -175,3 +175,6 @@ def detalle_factura(request):
             return HttpResponse(f"Error de conexión: {e}", status=500)
             
     return HttpResponse("Método no permitido", status=405)
+
+def pagina_info_estudiante(request):
+    return render(request, 'simulador_app/ayuda_estudiante.html')

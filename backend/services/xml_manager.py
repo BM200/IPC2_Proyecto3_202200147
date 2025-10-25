@@ -153,3 +153,30 @@ def generar_facturacion_detallada(fecha_inicio_str, fecha_fin_str):
             facturas_generadas.append({"numero_factura": numero_factura_actual, "nit_cliente": cliente['nit'], "nombre_cliente": cliente['nombre'], "fecha_factura": fecha_fin_rango.strftime('%d/%m/%Y'), "monto_a_pagar": round(monto_total_cliente, 2)})
             numero_factura_actual += 1
     return {"facturas": facturas_generadas, "detalles_consumo": detalles_consumo}
+
+def agregar_recurso(recurso_data):
+    """
+    Agrega un nuevo elemento <recurso> al archivo data.xml.
+    """
+    inicializar_xml_si_no_existe()
+    tree = ET.parse(DB_FILE)
+    root = tree.getroot()
+    lista_recursos_node = root.find('listaRecursos')
+    
+    if lista_recursos_node is None:
+        lista_recursos_node = ET.SubElement(root, 'listaRecursos')
+
+    nuevo_id = len(lista_recursos_node.findall('recurso')) + 1
+    
+    nuevo_recurso_node = ET.SubElement(lista_recursos_node, 'recurso', id=str(nuevo_id))
+
+    ET.SubElement(nuevo_recurso_node, 'nombre').text = recurso_data.get('nombre')
+    ET.SubElement(nuevo_recurso_node, 'abreviatura').text = recurso_data.get('abreviatura')
+    ET.SubElement(nuevo_recurso_node, 'metrica').text = recurso_data.get('metrica')
+    ET.SubElement(nuevo_recurso_node, 'tipo').text = recurso_data.get('tipo')
+    ET.SubElement(nuevo_recurso_node, 'valorXhora').text = str(recurso_data.get('valorXhora'))
+
+    tree.write(DB_FILE, encoding='utf-8', xml_declaration=True)
+    
+    recurso_data['id'] = nuevo_id
+    return recurso_data

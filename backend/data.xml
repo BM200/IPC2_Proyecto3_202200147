@@ -22,7 +22,7 @@
             <tipo>HARDWARE</tipo>
             <valorXhora>30</valorXhora>
         </recurso>
-    </listaRecursos>
+    <recurso id="4"><nombre>Recurso de Prueba Postman</nombre><abreviatura>PST</abreviatura><metrica>Pruebas</metrica><tipo>Software</tipo><valorXhora>99.99</valorXhora></recurso></listaRecursos>
 
     <listaCategorias>
         <categoria id="1">

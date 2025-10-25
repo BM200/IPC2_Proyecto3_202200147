@@ -13,7 +13,7 @@ from services.xml_manager import (
     procesar_y_guardar_config_xml,
     procesar_consumos_xml,
     obtener_datos_completos,
-    generar_facturacion_detallada  # <-- La nueva función
+    generar_facturacion_detallada, agregar_recurso,
 )
 
 app = Flask(__name__)
@@ -42,6 +42,28 @@ def registrar_consumo():
         return jsonify({"error": "El archivo data.xml no existe. Cargue una configuración primero."}), 404
     except Exception as e:
         return jsonify({"error": f"Error al registrar consumo: {e}"}), 500
+    
+
+@app.route('/api/crearRecurso', methods=['POST'])
+def endpoint_crear_recurso():
+    """
+    Endpoint para crear un único recurso a partir de un JSON.
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No se recibieron datos en formato JSON"}), 400
+
+    try:
+        # Llama a la función del servicio que maneja la lógica
+        recurso_creado = agregar_recurso(data)
+        return jsonify({
+            "mensaje": "Recurso almacenado en XML exitosamente",
+            "recurso": recurso_creado
+        }), 201 # 201 Created es el código correcto para una creación exitosa
+    except Exception as e:
+        print(f"Error al crear recurso: {e}")
+        return jsonify({"error": "Ocurrió un error interno al crear el recurso."}), 500
+
 
 @app.route('/api/consultarDatos', methods=['GET'])
 def consultar_datos():
