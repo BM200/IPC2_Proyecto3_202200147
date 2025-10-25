@@ -21,6 +21,15 @@
     <div class="container">
         <a href="{% url 'simulador_app:inicio' %}" class="nav-link">← Volver a Cargar Archivos</a>
         <h1>Consulta de Datos del Sistema</h1>
+        <h2>Generar Reporte de Análisis de Ventas</h2>
+        <form method="POST" action="{% url 'simulador_app:generar_reporte_ventas' %}">
+            {% csrf_token %}
+            <label for="fecha_inicio">Fecha de Inicio:</label>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+            <label for="fecha_fin">Fecha de Fin:</label>
+            <input type="date" id="fecha_fin" name="fecha_fin" required>
+            <button type="submit">Descargar Reporte en PDF</button>
+        </form>
 
         {% if error %}
             <p class="error">{{ error }}</p>

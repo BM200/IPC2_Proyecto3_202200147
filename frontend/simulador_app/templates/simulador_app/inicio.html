@@ -3,50 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <title>Simulador - Tecnologías Chapinas</title>
-</head>
     <style>
-        body{ font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        margin: 2rem; background-color: #f7f7f7; color: #333;    
-    }
-    .container {max-width: 800px; margin: auto; background: white; padding:2rem; border-radius:8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1)}
-    h1, h2 {color: #1a237e;}
-
-    form { margin-top: 1.5 rem; padding: 1.5 rem; border: 1px  solid #ddd; border-radius: 5px;}
-    input[type="file"] {display: block; margin-bottom: 1rem;}
-    button{ background-color: #1a237e; color:white; padding:0.7rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;}
-    button:hover{background: color #394939;}
-    .message-box {margin-top: 2rem; padding: 1rem; border-radius: 5px;}
-    .success {background-color: #e8f5e9; border:1px solid #4caf50; color: #1b5e20;}
-    .error {background-color: #ffebee; border:1px solid #f44336; color: #b71c1c;} 
-    pre {background: #eee;padding: 1rem; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;}  
+        /* ... (los estilos se quedan igual) ... */
+        body { font-family: system-ui, sans-serif; margin: 2rem; background-color: #f7f7f7; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1, h2 { color: #1a237e; border-bottom: 2px solid #ddd; padding-bottom: 0.5rem; }
+        form { margin-top: 1.5rem; padding: 1.5rem; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }
+        input[type="file"], input[type="date"] { display: block; margin-bottom: 1rem; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #1a237e; color: white; padding: 0.7rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        button:hover { background-color: #3949ab; }
+        .message-box { margin-top: 2rem; padding: 1rem; border-radius: 5px; }
+        .success { background-color: #e8f5e9; border: 1px solid #4caf50; color: #1b5e20; }
+        .error { background-color: #ffebee; border: 1px solid #f44336; color: #b71c1c; }
+        pre { background: #eee; padding: 1rem; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.8rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
     </style>
+</head>
 <body>
     <div class="container">
-        
         <a href="{% url 'simulador_app:consulta_datos' %}" class="nav-link">Consultar Datos del Sistema →</a>
-
         <h1>Simulador de Tecnologías Chapinas</h1>
-        <h2>1.cargar archio de configuracion (.xml)</h2>
+
+        <!-- Formulario de Configuración -->
+        <h2>1. Cargar Archivo de Configuración (.xml)</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="configFile"> Seleccione el archivo de config.: </label>
-            <input type="file" name="archivo_config" id="configFile" accept =".xml" required>
-            
+            <label for="configFile">Selecciona el archivo:</label>
+            <input type="file" name="archivo_config" id="configFile" accept=".xml" required>
             <input type="hidden" name="form_type" value="configuracion">
-
-            <button type="submit">Cargar configuracion</button>
+            <button type="submit">Cargar Configuración</button>
         </form>
 
-    <!-- Formulario de Consumos ---->
+        <!-- Formulario de Consumos -->
         <h2>2. Registrar Consumos (.xml)</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="consumoFile">Selecciona el archivo de consumos:</label>
+            <label for="consumoFile">Selecciona el archivo:</label>
             <input type="file" name="archivo_consumo" id="consumoFile" accept=".xml" required>
             <input type="hidden" name="form_type" value="consumo">
             <button type="submit">Registrar Consumos</button>
         </form>
-        <!---Seccion de mensajes XD. -->
+
+        <!-- NUEVO: Formulario de Facturación -->
+        <h2>3. Generar Facturación por Período</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <label for="fecha_inicio">Fecha de Inicio:</label>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" required>
+            <label for="fecha_fin">Fecha de Fin:</label>
+            <input type="date" id="fecha_fin" name="fecha_fin" required>
+            <input type="hidden" name="form_type" value="facturacion">
+            <button type="submit">Generar Facturas</button>
+        </form>
+        <h2>4. Operaciones del Sistema</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="resetear">
+            <p>Esta acción eliminará todos los datos cargados permanentemente.</p>
+            <button type="submit" style="background-color: #c62828;">Inicializar / Resetear Sistema</button>
+        </form>
+
+        <!-- Sección de Mensajes (Ahora también muestra facturas) -->
         {% if mensaje %}
             <div class="message-box {{ tipo_mensaje }}">
                 <h3>Resultado de la Operación:</h3>
@@ -55,8 +74,45 @@
                     <h4>Resumen:</h4>
                     <pre>{{ resumen }}</pre>
                 {% endif %}
+                
+                <!-- NUEVO: Tabla para mostrar las facturas generadas -->
+                {% if facturas %}
+                    <h4>Facturas Generadas:</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Factura</th>
+                                <th>NIT Cliente</th>
+                                <th>Nombre Cliente</th>
+                                <th>Fecha</th>
+                                <th>Monto a Pagar</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factura in facturas %}
+                                <tr>
+                                    <td>{{ factura.numero_factura }}</td>
+                                    <td>{{ factura.nit_cliente }}</td>
+                                    <td>{{ factura.nombre_cliente }}</td>
+                                    <td>{{ factura.fecha_factura }}</td>
+                                    <td>Q {{ factura.monto_a_pagar }}</td>
+                                    <td>    <!-- Formulario para descargar el detalle. --> 
+                                    <form action="{% url 'simulador_app:detalle_factura'%}" method="POST" style="margin:0;">
+                                        {% csrf_token %}
+                                        <!--Se filtra por numero de factura. . -->
+                                        <input type="hidden" name="numero_factura" value="{{factura.numero_factura}}">
+                                        <!--se envia todos los detalles calculados -->
+                                        <button type="submit" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">Ver Detalle (PDF)</button>
+                                    </form></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
             </div>
         {% endif %}
+
     </div>
 </body>
 </html>
